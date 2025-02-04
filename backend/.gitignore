@@ -1,0 +1,15 @@
+# Python/Django specific files
+__pycache__/
+*.pyc
+*.pyo
+*.sqlite3
+*.log
+*.env
+db.sqlite3
+.env
+*.DS_Store
+*.coverage
+*.tox
+*.nox
+*.coverage
+*.hypothesis/
