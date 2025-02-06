@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from django.http import JsonResponse
-from .models import Item
+from django.http import JsonResponse, HttpResponse
+from .models import User, Item
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db import connection
+from django.db import connection, transaction
 import logging
 
 # Initialize logger
@@ -15,36 +15,138 @@ def api_items(request):
     return JsonResponse(list(items), safe=False)
 
 # Function to populate the database with users and items
+# Function to populate the database with users and items
 def populate_db(request):
     try:
         # Clear existing users and items
-        User.objects.all().delete()
-        Item.objects.all().delete()
+        with transaction.atomic():
+            User.objects.all().delete()
+            Item.objects.all().delete()
 
-        # Create 6 users
-        for i in range(1, 7):
-            user = User.objects.create_user(
-                username=f'testuser{i}',
-                password=f'pass{i}',
-                email=f'testuser{i}@shop.aa'
-            )
+            user_details = []  # Store user information for response
 
-            # Create 10 items for the first 3 users (sellers)
-            if i <= 3:
-                for j in range(1, 11):
-                    Item.objects.create(
-                        title=f'Populated Item {j}',
-                        description=f'This is a description for item {j}.',
-                        price=49.99,
-                        owner=user,
-                        date_added=timezone.now()
-                    )
+            # Create 6 users
+            for i in range(1, 7):
+                password = f'pass{i}'  # This is the plaintext password
+                user = User.objects.create_user(
+                    username=f'testuser{i}',
+                    password=password,
+                    email=f'testuser{i}@shop.aa'
+                )
 
-        # Return success response as JSON
-        return JsonResponse({"message": "Database populated successfully!"}, status=200)
-    
+                # Append user details with plaintext password
+                user_details.append({
+                    'username': user.username,
+                    'email': user.email,
+                    'password': password  # Return the plaintext password
+                })
+
+                # Create 10 items for the first 3 users (sellers)
+                if i <= 3:
+                    for j in range(1, 11):
+                        Item.objects.create(
+                            title=f'Populated Item {j}',
+                            description=f'This is a description for item {j}.',
+                            price=9.99,
+                            owner=user,
+                            date_added=timezone.now()
+                        )
+
+            # Return the response with the user details including plaintext password
+            return JsonResponse({
+                'message': 'Database populated successfully!',
+                'user_details': user_details  # Include the plaintext passwords
+            }, status=200)
+
     except Exception as e:
-        # Return error response as JSON in case of exception
+        return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
+
+    try:
+        # Clear existing users and items
+        with transaction.atomic():
+            User.objects.all().delete()
+            Item.objects.all().delete()
+
+            user_details = []  # Store user information for response
+
+            # Create 6 users
+            for i in range(1, 7):
+                password = f'pass{i}'  # This is the plaintext password
+                user = User.objects.create_user(
+                    username=f'testuser{i}',
+                    password=password,
+                    email=f'testuser{i}@shop.aa'
+                )
+
+                # Append user details with plaintext password
+                user_details.append({
+                    'username': user.username,
+                    'email': user.email,
+                    'password': password  # Return the plaintext password
+                })
+
+                # Create 10 items for the first 3 users (sellers)
+                if i <= 3:
+                    for j in range(1, 11):
+                        Item.objects.create(
+                            title=f'Populated Item {j}',
+                            description=f'This is a description for item {j}.',
+                            price=49.99,
+                            owner=user,
+                            date_added=timezone.now()
+                        )
+
+            # Return the response with the user details including plaintext password
+            return JsonResponse({
+                'message': 'Database populated successfully!',
+                'user_details': user_details  # Include the plaintext passwords
+            }, status=200)
+
+    except Exception as e:
+        return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
+
+    try:
+        # Clear existing users and items
+        with transaction.atomic():
+            User.objects.all().delete()
+            Item.objects.all().delete()
+
+            user_details = []  # Store user information for response
+
+            # Create 6 users
+            for i in range(1, 7):
+                password = f'pass{i}'
+                user = User.objects.create_user(
+                    username=f'testuser{i}',
+                    password=password,
+                    email=f'testuser{i}@shop.aa'
+                )
+
+                # Append user details to the list
+                user_details.append({
+                    'username': user.username,
+                    'email': user.email,
+                    'password': password  # Include plaintext password in the response
+                })
+
+                # Create 10 items for the first 3 users (sellers)
+                if i <= 3:
+                    for j in range(1, 11):
+                        Item.objects.create(
+                            title=f'Populated Item {j}',
+                            description=f'This is a description for item {j}.',
+                            price=49.99,
+                            owner=user,
+                            date_added=timezone.now()
+                        )
+
+            # Return the response as JSON with message and user details
+            return JsonResponse({
+                'message': 'Database populated successfully!',
+                'user_details': user_details  # Include the list of created user details
+            }, status=200)
+
+    except Exception as e:
         return JsonResponse({"message": f"Error: {str(e)}"}, status=500)
 
 # Home view for the shop
@@ -52,7 +154,14 @@ def shop_home(request):
     return render(request, 'shop/home.html')
 
 # API to get all users in JSON format
+# API to get all users in JSON format
 def api_users(request):
+    users = User.objects.all().values('username', 'email')
+    # Add plain text passwords to the response
+    user_list = list(users)
+    for user in user_list:
+        user['password'] = f'pass{user["username"][-1]}'  # Assuming the username ends with a number
+    return JsonResponse(user_list, safe=False)
     users = User.objects.all().values('username', 'password', 'email')
     return JsonResponse(list(users), safe=False)
 
