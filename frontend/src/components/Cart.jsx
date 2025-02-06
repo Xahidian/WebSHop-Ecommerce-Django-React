@@ -1,18 +1,12 @@
-// src/components/Cart.jsx
+// Cart.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity }) => {
+const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity, onCheckout }) => {
   const navigate = useNavigate();
 
-  const getItemQuantity = (item) => {
-    return items.filter(cartItem => cartItem.id === item.id).length;
-  };
-
-  const uniqueItems = [...new Set(items.map(item => item.id))].map(id => items.find(item => item.id === id));
-
   const handleCheckoutClick = () => {
-    navigate('/checkout'); // Navigate without clearing the cart
+    navigate('/checkout', { state: { items } });  // Pass cart items to Checkout component
   };
 
   return (
@@ -23,7 +17,7 @@ const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity }) => {
       ) : (
         <div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {uniqueItems.map((item) => (
+            {items.map((item) => (
               <div key={item.id} className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
                 <img className="w-full h-48 object-cover" src={item.image} alt="Product" />
                 <div className="px-6 py-4">
@@ -38,7 +32,7 @@ const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity }) => {
                       >
                         -
                       </button>
-                      <span className="mx-2 text-gray-900 font-bold text-lg">{getItemQuantity(item)}</span>
+                      <span className="mx-2 text-gray-900 font-bold text-lg">{item.quantity || 1}</span>
                       <button
                         onClick={() => onIncreaseQuantity(item)}
                         className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-2 py-1"

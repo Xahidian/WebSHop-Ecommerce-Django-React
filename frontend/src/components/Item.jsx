@@ -5,13 +5,15 @@ import { Link } from 'react-router-dom';
 const Item = ({ id, image, title, description, price, dateAdded, onAddToCart, onViewDetails }) => {
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
-      <img className="w-full h-48 object-cover" src={image} alt="Product" />
+      <img className="w-full h-48 object-cover" src={image || '/image/Product1.jpg'} alt="Product" />
       <div className="px-6 py-4">
         <div className="font-bold text-xl mb-2 text-gray-900">{title}</div>
         <p className="text-gray-700 text-base mb-4">{description}</p>
         <div className="flex justify-between items-center mb-4">
           <span className="text-gray-900 font-bold text-lg">${price}</span>
-          <span className="text-gray-600 text-sm">{new Date(dateAdded).toLocaleDateString()}</span>
+          <span className="text-gray-600 text-sm">
+            {dateAdded ? new Date(dateAdded).toLocaleDateString() : 'No Date'}
+          </span>
         </div>
         <div className="flex space-x-2">
           <button
@@ -31,5 +33,6 @@ const Item = ({ id, image, title, description, price, dateAdded, onAddToCart, on
     </div>
   );
 };
+
 
 export default Item;

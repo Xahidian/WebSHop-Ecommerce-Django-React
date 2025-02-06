@@ -3,11 +3,26 @@ import React from 'react';
 import Item from './Item';
 
 const ItemList = ({ items, onAddToCart, onViewDetails }) => {
+  console.log("Items array:", items);  // Log the full items array for debugging
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {items.map((item) => (
-        <Item key={item.id} {...item} onAddToCart={() => onAddToCart(item)} onViewDetails={onViewDetails} />
-      ))}
+      {items.map((item, index) => {
+        console.log(`Rendering Item with key: ${item.id || index}`); // Log each key
+        return (
+          <Item
+            key={item.id || index}
+            id={item.id}
+            image={item.image}
+            title={item.title}
+            description={item.description}
+            price={item.price}
+            dateAdded={item.date_added}
+            onAddToCart={() => onAddToCart(item)}
+            onViewDetails={onViewDetails}
+          />
+        );
+      })}
     </div>
   );
 };

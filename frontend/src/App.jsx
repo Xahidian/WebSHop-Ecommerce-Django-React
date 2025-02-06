@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ItemList from './components/ItemList';
 import SignUp from './components/SignUp';
@@ -12,51 +12,53 @@ import Modal from './components/Modal';
 import Purchased from './components/Purchased';
 import EditAccount from './components/EditAccount';
 import PopulationDb from './components/PopulationDb'; // Corrected import for PopulationDb component
+import { fetchItems } from './api'; // Import the fetchItems function
 
 const App = () => {
   const [cart, setCart] = useState([]);
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [items, setItems] = useState([]); // State to store fetched items
 
-  const sampleItems = [
-    {
-      id: 1,
-      image: '/image/Product1.jpg',
-      title: 'Sample Item 1',
-      description: 'This is a sample item description.',
-      price: 29.99,
-      dateAdded: '2025-02-04T12:00:00Z',
-    },
-    {
-      id: 2,
-      image: '/image/Product2.jpg',
-      title: 'Sample Item 2',
-      description: 'This is another sample item description.',
-      price: 49.99,
-      dateAdded: '2025-02-04T12:00:00Z',
-    },
-  ];
+  useEffect(() => {
+    const getItems = async () => {
+      const fetchedItems = await fetchItems();
+      setItems(fetchedItems);
+    };
+    getItems();
+  }, []);
 
   const handleAddToCart = (item) => {
     setCart((prevCart) => [...prevCart, item]);
   };
 
   const handleIncreaseQuantity = (item) => {
-    setCart((prevCart) => [...prevCart, item]);
-  };
-
-  const handleDecreaseQuantity = (item) => {
     setCart((prevCart) => {
-      const index = prevCart.findIndex(cartItem => cartItem.id === item.id);
+      const newCart = [...prevCart];
+      const index = newCart.findIndex(cartItem => cartItem.id === item.id);
       if (index !== -1) {
-        const updatedCart = [...prevCart];
-        updatedCart.splice(index, 1);
-        return updatedCart;
+        newCart[index].quantity = (newCart[index].quantity || 1) + 1;  // Increase quantity
+      } else {
+        newCart.push({...item, quantity: 1});  // If item is not in the cart, add it with quantity 1
       }
-      return prevCart;
+      return newCart;
     });
   };
+  
+  const handleDecreaseQuantity = (item) => {
+    setCart((prevCart) => {
+      const newCart = [...prevCart];
+      const index = newCart.findIndex(cartItem => cartItem.id === item.id);
+      if (index !== -1 && newCart[index].quantity > 1) {
+        newCart[index].quantity -= 1;  // Decrease quantity
+      } else {
+        newCart.splice(index, 1);  // Remove item if quantity is 1
+      }
+      return newCart;
+    });
+  };
+  
 
   const handleCheckout = () => {
     setPurchasedItems(cart);  // Store cart items in purchasedItems
@@ -84,7 +86,7 @@ const App = () => {
     setSearchQuery(query);
   };
 
-  const filteredItems = sampleItems.filter((item) =>
+  const filteredItems = items.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
