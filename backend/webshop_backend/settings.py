@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt',
     'rest_framework',  # Add this
     'shop',            # Add this
     'corsheaders',     # Add this
@@ -40,7 +41,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'webshop_backend.urls'
 
 TEMPLATES = [
@@ -125,3 +126,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://localhost:5173",  # Your frontend's development URL
 #     "http://127.0.0.1:5173",  # Another local option
 # ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # <-- Set this to AllowAny
+    ],
+}
+

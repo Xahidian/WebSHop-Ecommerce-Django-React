@@ -12,3 +12,13 @@ class Item(models.Model):
         return self.title
 
 # Create your models here.
+# models.py
+class RegisteredUserInfo(models.Model):
+    username = models.CharField(max_length=150)
+    email = models.EmailField()
+    password = models.CharField(max_length=128)
+    is_test = models.BooleanField(default=False)  # ✅ New field
+
+    def __str__(self):
+        return self.username
+

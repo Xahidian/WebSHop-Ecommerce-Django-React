@@ -1,6 +1,8 @@
 // src/components/AddItem.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 const AddItem = () => {
   const [title, setTitle] = useState('');
@@ -9,25 +11,52 @@ const AddItem = () => {
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!title || !description || !price) {
       alert('Please fill in all required fields.');
       return;
     }
-
-    // Log form values for debugging; this would be sent to the backend later
-    console.log({
-      title,
-      description,
-      price,
-      image,
-    });
-
-    alert('Item added successfully!');
-    navigate('/items');
+  
+    const token = localStorage.getItem('access_token');
+    console.log("🚀 JWT Token being sent:", token);
+    
+    // Get JWT token
+    if (!token) {
+      alert('You must be logged in to add an item.');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/items/add/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // ✅ Attach the JWT
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          price,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add item');
+      }
+  
+      alert('Item added successfully!');
+      navigate('/items');
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred: ' + err.message);
+    }
   };
+  
+  
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);

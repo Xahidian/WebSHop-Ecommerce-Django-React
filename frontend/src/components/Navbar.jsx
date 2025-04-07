@@ -1,8 +1,7 @@
-// src/components/Navbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const Navbar = ({ cartCount, onSearch }) => {
+const Navbar = ({ cartCount, onSearch, loggedInUser, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (e) => {
@@ -28,8 +27,47 @@ const Navbar = ({ cartCount, onSearch }) => {
             placeholder="Search..."
             className="px-4 py-2 border rounded-lg"
           />
-          <Link to="/login" className="text-gray-900 dark:text-white hover:underline">Login</Link>
-          <Link to="/signup" className="text-gray-900 dark:text-white hover:underline">Sign Up</Link>
+
+          {loggedInUser ? (
+            <>
+             <span className="text-gray-800 dark:text-white font-medium">
+  Hello, {loggedInUser}
+</span>
+
+<Link to="/edit-account" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+  Edit Account
+</Link>
+<Link
+  to="/add-item"
+  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+>
+  Add Item
+</Link>
+<button
+  onClick={onLogout}
+  className="text-red-600 hover:underline font-semibold"
+>
+  Logout
+</button>
+
+              <button
+                onClick={onLogout}
+                className="text-red-600 hover:underline font-semibold"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-gray-900 dark:text-white hover:underline">
+                Login
+              </Link>
+              <Link to="/signup" className="text-gray-900 dark:text-white hover:underline">
+                Sign Up
+              </Link>
+            </>
+          )}
+
           <Link to="/cart" className="relative text-gray-900 dark:text-white hover:underline">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

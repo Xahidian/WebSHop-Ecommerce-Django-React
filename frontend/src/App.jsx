@@ -20,6 +20,8 @@ const App = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState([]); // State to store fetched items
+  const [loggedInUser, setLoggedInUser] = useState(localStorage.getItem('username') || '');
+
 
   useEffect(() => {
     const getItems = async () => {
@@ -93,12 +95,25 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen flex flex-col">
-        <Navbar cartCount={cart.length} onSearch={handleSearch} />
+      <Navbar
+  cartCount={cart.length}
+  onSearch={handleSearch}
+  loggedInUser={loggedInUser}
+  onLogout={() => {
+    setLoggedInUser('');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+  }}
+/>
+
         <div className="container mx-auto p-4 flex-grow">
           <Routes>
             <Route path="/" element={<FrontPage items={filteredItems} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Login onLogin={setLoggedInUser} />} />
+
+
             <Route path="/add-item" element={<AddItem />} />
             <Route path="/items" element={<ItemList items={filteredItems} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} />} />
             <Route path="/cart" element={<Cart items={cart} onIncreaseQuantity={handleIncreaseQuantity} onDecreaseQuantity={handleDecreaseQuantity} onCheckout={handleCheckout} />} />

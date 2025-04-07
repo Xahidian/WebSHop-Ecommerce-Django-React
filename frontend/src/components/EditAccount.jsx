@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 
 const EditAccount = () => {
   const [oldPassword, setOldPassword] = useState('');
@@ -9,35 +11,59 @@ const EditAccount = () => {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Simple client-side validation
+  
+    setError('');
+    setSuccess('');
+  
     if (!oldPassword || !newPassword || !confirmNewPassword) {
       setError('Please fill in all fields.');
       return;
     }
-
+  
     if (newPassword !== confirmNewPassword) {
       setError('New passwords do not match.');
       return;
     }
-
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
-      return;
+  
+    try {
+      const token = localStorage.getItem('access_token');
+ // assuming you store JWT token here
+      console.log('JWT Token:', token); // 🔍 this will print in browser console
+      const response = await fetch(`${API_BASE_URL}/api/change-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword
+        })
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        setError(data.error || 'Password update failed.');
+        return;
+      }
+  
+      setSuccess(data.message || 'Password updated successfully!');
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+  
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred. Please try again.');
     }
-
-    // Assuming backend logic to update password (skip for now)
-    // Simulate success
-    setSuccess('Password updated successfully.');
-    setError('');
-
-    // Redirect after successful update (optional)
-    setTimeout(() => {
-      navigate('/profile'); // Redirect to profile page (or any other page)
-    }, 2000);
   };
+  
 
   return (
     <div className="container mx-auto p-4">
