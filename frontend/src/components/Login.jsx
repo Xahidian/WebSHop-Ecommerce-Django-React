@@ -15,17 +15,28 @@ const Login = ({ onLogin }) => {
   
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
-      localStorage.setItem('username', username); // ✅ Add this
-      console.log('Attempting login with:', { username, password });
-
-      onLogin(username); // Update parent state
+      localStorage.setItem('username', username);
+  
+      // ✅ Decode the access token to get user id
+      const base64Url = data.access.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(atob(base64));
+  
+      const userObject = {
+        id: payload.user_id,   // ✅ JWT returns user_id field
+        username: username
+      };
+  
+      localStorage.setItem("user", JSON.stringify(userObject)); // ✅ Save user for later use
+  
+      onLogin(username);
       navigate('/');
     } catch (err) {
-      console.error("Login failed:", err);  // <-- show real backend error
+      console.error("Login failed:", err);
       setError(err.message || 'Login failed');
     }
-    
   };
+  
   
 
   return (

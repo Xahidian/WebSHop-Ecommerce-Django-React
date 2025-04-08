@@ -128,6 +128,7 @@ def populate_db(request):
                             description=f'Description for item {j}',
                             price=9.99,
                             owner=user,
+                            quantity=10,  # ✅ add this
                             date_added=timezone.now()
                         )
 
@@ -184,3 +185,88 @@ def change_password(request):
         pass  # Safe fallback
 
     return Response({'message': 'Password updated successfully!'}, status=200)
+#user not able to add his own items
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_to_cart(request):
+    user = request.user
+    item_id = request.data.get('item_id')
+
+    if not item_id:
+        return Response({"error": "Missing item_id in request."}, status=400)
+
+    try:
+        item = Item.objects.get(id=item_id)
+
+        if item.owner == user:
+            return Response({"error": "You cannot add your own item to the cart."}, status=403)
+
+        # ✅ Don't decrease quantity here
+        return Response({"success": "Item added to cart."}, status=200)
+
+    except Item.DoesNotExist:
+        return Response({"error": "Item not found."}, status=404)
+
+
+# Add "My Inventory" API
+# shop/views.py
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_inventory(request):
+    user = request.user
+    on_sale = Item.objects.filter(owner=user, quantity__gt=0)
+    sold = Item.objects.filter(owner=user, quantity=0)
+
+    return Response({
+        "on_sale": ItemSerializer(on_sale, many=True).data,
+        "sold": ItemSerializer(sold, many=True).data,
+    })
+#checkout API endpoint in views.py to process cart purchase:
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def checkout(request):
+    user = request.user
+    cart_items = request.data.get("items", [])
+
+    for entry in cart_items:
+        try:
+            item = Item.objects.get(id=entry["id"])
+            if item.quantity >= entry["quantity"]:
+                item.quantity -= entry["quantity"]
+                if item.quantity == 0:
+                    item.sold = True
+                item.save()
+            else:
+                return Response({"error": f"Not enough stock for item {item.title}"}, status=400)
+        except Item.DoesNotExist:
+            return Response({"error": f"Item with ID {entry['id']} not found."}, status=404)
+
+    return Response({"success": "Purchase completed."}, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def purchase_item(request):
+    user = request.user
+    item_id = request.data.get('item_id')
+    quantity = int(request.data.get('quantity', 1))  # default to 1
+
+    if not item_id:
+        return Response({"error": "Missing item_id."}, status=400)
+
+    try:
+        item = Item.objects.get(id=item_id)
+
+        if item.quantity < quantity:
+            return Response({"error": "Not enough stock available."}, status=400)
+
+        item.quantity -= quantity
+        if item.quantity == 0:
+            item.sold = True
+        item.save()
+
+        return Response({"success": "Purchase completed."}, status=200)
+
+    except Item.DoesNotExist:
+        return Response({"error": "Item not found."}, status=404)

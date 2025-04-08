@@ -31,22 +31,65 @@ const App = () => {
     getItems();
   }, []);
 
-  const handleAddToCart = (item) => {
-    setCart((prevCart) => [...prevCart, item]);
+  const handleAddToCart = async (item) => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("You must be logged in to add items to cart.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/add-to-cart/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ item_id: item.id })
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // ✅ Update the cart state so the cart icon shows +1
+        setCart((prevCart) => {
+          const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+          if (existingItem) {
+            return prevCart.map((cartItem) =>
+              cartItem.id === item.id
+                ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                : cartItem
+            );
+          } else {
+            return [...prevCart, { ...item, quantity: 1 }];
+          }
+        });
+  
+        alert("✅ Item added to cart.");
+      } else {
+        alert(`❌ ${data.error || "Failed to add item."}`);
+      }
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      alert("❌ Network error.");
+    }
   };
+  
+  
+  
+  
+  
 
   const handleIncreaseQuantity = (item) => {
-    setCart((prevCart) => {
-      const newCart = [...prevCart];
-      const index = newCart.findIndex(cartItem => cartItem.id === item.id);
-      if (index !== -1) {
-        newCart[index].quantity = (newCart[index].quantity || 1) + 1;  // Increase quantity
-      } else {
-        newCart.push({...item, quantity: 1});  // If item is not in the cart, add it with quantity 1
-      }
-      return newCart;
-    });
+    setCart((prevCart) =>
+      prevCart.map((cartItem) =>
+        cartItem.id === item.id
+          ? { ...cartItem, quantity: cartItem.quantity + 1 }
+          : cartItem
+      )
+    );
   };
+  
   
   const handleDecreaseQuantity = (item) => {
     setCart((prevCart) => {
@@ -67,14 +110,40 @@ const App = () => {
     setCart([]);  // Clear cart after purchase
   };
 
-  const handleProceed = () => {
-    if (cart.length > 0) {
-      // Add cart items to purchasedItems
-      setPurchasedItems((prevPurchasedItems) => [...prevPurchasedItems, ...cart]);
-      setCart([]);  // Clear cart after purchase
-      alert('Purchase successful! Check "Purchased Items" for details.');
+ const handleProceed = async () => {
+  const token = localStorage.getItem("access_token");
+
+  if (!token) {
+    alert("❌ You must be logged in to complete the purchase.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ items: cart })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setPurchasedItems((prev) => [...prev, ...cart]);
+      setCart([]);
+      alert("✅ Purchase successful!");
+    } else {
+      alert(`❌ ${data.error || "Checkout failed."}`);
     }
-  };
+  } catch (err) {
+    console.error("Purchase error:", err);
+    alert("❌ Purchase failed due to network error.");
+  }
+};
+
+  
 
   const handleViewDetails = (item) => {
     setSelectedItem(item);
@@ -96,7 +165,8 @@ const App = () => {
     <Router>
       <div className="min-h-screen flex flex-col">
       <Navbar
-  cartCount={cart.length}
+ cartCount={cart.reduce((acc, item) => acc + item.quantity, 0)}
+
   onSearch={handleSearch}
   loggedInUser={loggedInUser}
   onLogout={() => {

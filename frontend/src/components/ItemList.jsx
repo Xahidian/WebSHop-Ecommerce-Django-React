@@ -11,16 +11,18 @@ const ItemList = ({ items, onAddToCart, onViewDetails }) => {
         console.log(`Rendering Item with key: ${item.id || index}`); // Log each key
         return (
           <Item
-            key={item.id || index}
-            id={item.id}
-            image={item.image}
-            title={item.title}
-            description={item.description}
-            price={item.price}
-            dateAdded={item.date_added}
-            onAddToCart={() => onAddToCart(item)}
-            onViewDetails={onViewDetails}
-          />
+          key={item.id}
+          id={item.id}
+          image={item.image}
+          title={item.title}
+          description={item.description}
+          price={item.price}
+          dateAdded={item.date_added}
+          ownerId={item.owner_id}
+          ownerUsername={item.owner_username} // ✅ Pass ownerUsername here
+          onAddToCart={() => onAddToCart(item)}
+          onViewDetails={onViewDetails}
+        />
         );
       })}
     </div>

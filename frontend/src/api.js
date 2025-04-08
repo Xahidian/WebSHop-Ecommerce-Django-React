@@ -75,3 +75,23 @@ export const registerUser = async (username, email, password) => {
   return response.json();
 };
 
+export async function addToCart(itemId) {
+  const token = localStorage.getItem('access_token'); // ✅ corrected
+
+  const response = await fetch(`${API_BASE_URL}/api/add-to-cart/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    body: JSON.stringify({ item_id: itemId })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Error adding to cart');
+  }
+
+  return data;
+}

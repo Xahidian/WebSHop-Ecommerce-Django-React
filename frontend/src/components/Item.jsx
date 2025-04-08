@@ -2,13 +2,35 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Item = ({ id, image, title, description, price, dateAdded, onAddToCart, onViewDetails }) => {
+const Item = ({
+  id,
+  image,
+  title,
+  description,
+  price,
+  dateAdded,
+  ownerId,
+  ownerUsername, // ✅ add this
+  onAddToCart,
+  onViewDetails
+}) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = parseInt(user?.id);  // ✅ Force number for accurate comparison
+  const isOwnItem = userId === ownerId;
+  
+  console.log("🧪 userId from localStorage:", userId);
+  console.log("🧪 item.ownerId:", ownerId);
+  console.log("🧪 isOwnItem:", isOwnItem);
+  console.log("📦 localStorage user object:", user);
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
       <img className="w-full h-48 object-cover" src={image || '/image/Product1.jpg'} alt="Product" />
       <div className="px-6 py-4">
-        <div className="font-bold text-xl mb-2 text-gray-900">{title}</div>
-        <p className="text-gray-700 text-base mb-4">{description}</p>
+      <div className="font-bold text-xl mb-2 text-gray-900">{title}</div>
+     
+<div className="text-sm text-gray-600 mb-2">Owner: {ownerUsername || 'Unknown'}</div> {/* ✅ SHOW IT */}
+<p className="text-gray-700 text-base mb-4">{description}</p>
+
         <div className="flex justify-between items-center mb-4">
           <span className="text-gray-900 font-bold text-lg">${price}</span>
           <span className="text-gray-600 text-sm">
@@ -22,17 +44,26 @@ const Item = ({ id, image, title, description, price, dateAdded, onAddToCart, on
           >
             View Details
           </button>
-          <button
-            onClick={onAddToCart}
-            className="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-          >
-            Add to Cart
-          </button>
+
+          {isOwnItem ? (
+            <button
+              disabled
+              className="w-full text-white bg-gray-400 cursor-not-allowed font-medium rounded-lg text-sm px-5 py-2.5"
+            >
+              Your Item
+            </button>
+          ) : (
+            <button
+              onClick={onAddToCart}
+              className="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            >
+              Add to Cart
+            </button>
+          )}
         </div>
       </div>
     </div>
   );
 };
-
 
 export default Item;

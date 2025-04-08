@@ -17,6 +17,17 @@ urlpatterns = [
     path('api/items/', views.api_items, name='api_items'),
     path('api/users/', views.api_users, name='api_users'),
     path('api/items/add/', views.api_add_item, name='api_add_item'),
+   path('api/user-inventory/', views.user_inventory, name='user_inventory'),
+path('api/add-to-cart/', views.add_to_cart, name='add_to_cart'),
+path('api/checkout/', views.checkout, name='checkout'),
+
+
+
+   path('api/purchase-item/', views.purchase_item, name='purchase_item'),
+
+
+
+
 
     # 🔹 Auth-related Endpoints
     path('register/', views.register_user, name='register'),

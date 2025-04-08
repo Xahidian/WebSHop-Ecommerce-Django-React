@@ -166,7 +166,7 @@ const PopulationDb = () => {
         <td className="px-4 py-2 border text-sm text-gray-800 text-center">{item.title}</td>
         <td className="px-4 py-2 border text-sm text-gray-800 text-center">{item.description}</td>
         <td className="px-4 py-2 border text-sm text-gray-800 text-center">${item.price}</td>
-        <td className="px-4 py-2 border text-sm text-gray-800 text-center">{item.owner}</td>
+        <td className="px-4 py-2 border text-sm text-gray-800 text-center">{item.owner_username || 'Unknown'}</td>
         <td className="px-4 py-2 border text-sm text-gray-800 text-center">
           {new Date(item.date_added).toLocaleDateString()}
         </td>

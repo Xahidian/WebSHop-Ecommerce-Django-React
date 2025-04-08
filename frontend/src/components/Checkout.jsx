@@ -10,9 +10,10 @@ const Checkout = ({ items, onProceed }) => {
   const totalAmount = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   const handleProceed = () => {
-    onProceed();  // Proceed with the purchase logic
-    navigate('/purchased');  // Redirect to the purchased items list after proceeding
+    onProceed();  // Let App.jsx handle the logic
+    navigate('/purchased');
   };
+  
 
   return (
     <div className="container mx-auto p-4">
