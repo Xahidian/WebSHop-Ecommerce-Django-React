@@ -1,10 +1,8 @@
-// src/components/AddItem.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-
-const AddItem = () => {
+const AddItem = ({ onItemAdded }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
@@ -22,23 +20,25 @@ const AddItem = () => {
     const token = localStorage.getItem('access_token');
     console.log("🚀 JWT Token being sent:", token);
     
-    // Get JWT token
     if (!token) {
       alert('You must be logged in to add an item.');
       return;
     }
   
     try {
+      // If you don't want to send image as part of FormData, leave as JSON.
+      // Otherwise, change to FormData (see below if needed).
       const response = await fetch(`${API_BASE_URL}/api/items/add/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // ✅ Attach the JWT
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title,
           description,
           price,
+          // If your backend accepts an image, you'll need to switch to FormData
         }),
       });
   
@@ -49,6 +49,11 @@ const AddItem = () => {
       }
   
       alert('Item added successfully!');
+      
+      // Call the callback with the new item data
+      if (onItemAdded) onItemAdded(data);
+      
+      // Navigate to /items
       navigate('/items');
     } catch (err) {
       console.error(err);
@@ -56,8 +61,6 @@ const AddItem = () => {
     }
   };
   
-  
-
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
   };

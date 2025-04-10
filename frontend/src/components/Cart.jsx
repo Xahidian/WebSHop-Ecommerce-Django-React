@@ -9,48 +9,80 @@ const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity, onCheckout }) => 
     navigate('/checkout', { state: { items } });  // Pass cart items to Checkout component
   };
 
+  // Calculate total price
+  const total = items.reduce(
+    (acc, item) => acc + item.price * (item.quantity || 1),
+    0
+  );
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Shopping Cart</h1>
+    <div className="container mx-auto p-6">
+      <h1 className="text-4xl font-bold mb-8 text-center">Shopping Cart</h1>
       {items.length === 0 ? (
-        <p className="text-center text-gray-700">Your cart is empty.</p>
+        <p className="text-center text-gray-600">Your cart is empty.</p>
       ) : (
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Cart Items */}
+          <div className="flex-1">
             {items.map((item) => (
-              <div key={item.id} className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
-                <img className="w-full h-48 object-cover" src={item.image} alt="Product" />
-                <div className="px-6 py-4">
-                  <div className="font-bold text-xl mb-2 text-gray-900">{item.title}</div>
-                  <p className="text-gray-700 text-base mb-4">{item.description}</p>
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-gray-900 font-bold text-lg">${item.price}</span>
-                    <div className="flex items-center">
-                      <button
-                        onClick={() => onDecreaseQuantity(item)}
-                        className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-2 py-1"
-                      >
-                        -
-                      </button>
-                      <span className="mx-2 text-gray-900 font-bold text-lg">{item.quantity || 1}</span>
-                      <button
-                        onClick={() => onIncreaseQuantity(item)}
-                        className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-2 py-1"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
+              <div key={item.id} className="flex items-center border-b py-4">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <div className="ml-4 flex-1">
+                  <h2 className="text-xl font-semibold">{item.title}</h2>
+                  <p className="text-gray-500 text-sm">{item.description}</p>
+                  <p className="text-gray-700 mt-2 font-bold">
+                    ${(item.price * (item.quantity || 1)).toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    onClick={() => onDecreaseQuantity(item)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    -
+                  </button>
+                  <span className="mx-3 text-lg">{item.quantity || 1}</span>
+                  <button
+                    onClick={() => onIncreaseQuantity(item)}
+                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-6 text-center">
+
+          {/* Order Summary */}
+          <div className="w-full lg:w-1/3 border p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+            <div className="flex justify-between mb-2">
+              <span>Subtotal</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            {/* Placeholder values for taxes and shipping fees */}
+            <div className="flex justify-between mb-2">
+              <span>Tax</span>
+              <span>$0.00</span>
+            </div>
+            <div className="flex justify-between mb-2">
+              <span>Shipping</span>
+              <span>$0.00</span>
+            </div>
+            <hr className="my-4" />
+            <div className="flex justify-between font-bold text-lg">
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
             <button
               onClick={handleCheckoutClick}
-              className="text-white bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5"
+              className="mt-6 w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
             >
-              Checkout
+              Proceed to Checkout
             </button>
           </div>
         </div>

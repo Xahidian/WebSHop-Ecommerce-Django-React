@@ -2,7 +2,7 @@
 import React from 'react';
 import Item from './Item';
 
-const ItemList = ({ items, onAddToCart, onViewDetails }) => {
+const ItemList = ({ items, onAddToCart, onViewDetails, loggedInUser}) => {
   console.log("Items array:", items);  // Log the full items array for debugging
 
   return (
@@ -11,6 +11,7 @@ const ItemList = ({ items, onAddToCart, onViewDetails }) => {
         console.log(`Rendering Item with key: ${item.id || index}`); // Log each key
         return (
           <Item
+          loggedInUser={loggedInUser}  // 👈 Add this
           key={item.id}
           id={item.id}
           image={item.image}

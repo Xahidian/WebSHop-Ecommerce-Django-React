@@ -18,6 +18,8 @@ from .models import RegisteredUserInfo  # import your new model
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from .models import Purchase
+
 
 
 
@@ -29,7 +31,7 @@ logger = logging.getLogger(__name__)
 @api_view(['GET'])
 @permission_classes([AllowAny])  # ✅ This allows public access
 def api_items(request):
-    items = Item.objects.all()
+    items = Item.objects.filter(quantity__gt=0, sold=False)
     serializer = ItemSerializer(items, many=True)
     return Response(serializer.data)
 
@@ -50,7 +52,7 @@ def api_add_item(request):
 
     serializer = ItemSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(owner=request.user)
+        serializer.save(owner=request.user, quantity=1)
         return Response(serializer.data, status=201)
     return Response(serializer.errors, status=400)
 # ✅ API to register new user
@@ -123,14 +125,16 @@ def populate_db(request):
 
                 if i <= 3:
                     for j in range(1, 11):
+                        image_path = 'image/Product1.jpg'
                         Item.objects.create(
-                            title=f'Populated Item {j}',
-                            description=f'Description for item {j}',
-                            price=9.99,
-                            owner=user,
-                            quantity=10,  # ✅ add this
-                            date_added=timezone.now()
-                        )
+        title=f'Populated Item {j}',
+        description=f'Description for item {j}',
+        price=9.99,
+        owner=user,
+        quantity=10,
+        date_added=timezone.now(),
+        image=image_path
+    )
 
             return JsonResponse({
                 'message': 'Database populated successfully!',
@@ -266,7 +270,90 @@ def purchase_item(request):
             item.sold = True
         item.save()
 
+        # ✅ Create a purchase record
+        Purchase.objects.create(
+            buyer=user,
+            item=item,
+            quantity=quantity,
+            purchase_price=item.price
+        )
+
         return Response({"success": "Purchase completed."}, status=200)
 
     except Item.DoesNotExist:
         return Response({"error": "Item not found."}, status=404)
+
+# edit item price & quantity
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def edit_item(request, item_id):
+    user = request.user
+
+    try:
+        item = Item.objects.get(id=item_id)
+    except Item.DoesNotExist:
+        return Response({'error': 'Item not found.'}, status=404)
+
+    if item.owner != user:
+        return Response({'error': 'You do not have permission to edit this item.'}, status=403)
+
+    if item.quantity <= 0:
+        return Response({'error': 'Cannot edit item that is sold out.'}, status=400)
+
+    price = request.data.get('price')
+    quantity = request.data.get('quantity')
+
+    if price is not None:
+        item.price = price
+    if quantity is not None:
+        item.quantity = quantity
+
+    item.save()
+    return Response({'success': 'Item updated successfully.'})
+#handle search
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_items(request):
+    query = request.GET.get('q', '')
+    items = Item.objects.filter(title__icontains=query)
+    serializer = ItemSerializer(items, many=True)
+    return Response(serializer.data)
+#latest_item_data
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def latest_item_data(request, item_id):
+    try:
+        # Get the item from the database.
+        item = Item.objects.get(pk=item_id)
+    except Item.DoesNotExist:
+        return Response({'error': 'Item not found.'}, status=404)
+    
+    # Determine availability; adjust logic as needed.
+    # For example, if an item is sold out (or has sold flag) then mark as unavailable.
+    available = (item.quantity > 0) and (not item.sold)
+    
+    # Prepare response data.
+    data = {
+        "price": item.price,
+        "available": available,
+        "quantity": item.quantity,  # New field: current available quantity.
+    }
+    return Response(data, status=200)
+# Add a Backend API to Return Purchases
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_purchases(request):
+    user = request.user
+    purchases = Purchase.objects.filter(buyer=user).select_related('item').order_by('-date')
+    data = [
+        {
+            "id": purchase.item.id,
+            "title": purchase.item.title,
+            "description": purchase.item.description,
+            "price": float(purchase.purchase_price),
+            "image": purchase.item.image.url if purchase.item.image else None,
+            "quantity": purchase.quantity
+        }
+        for purchase in purchases
+    ]
+    return Response(data)

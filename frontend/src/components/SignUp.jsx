@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { registerUser } from '../api'; // adjust the path if needed
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [username, setUsername] = useState('');
@@ -7,20 +9,26 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
+  const navigate = useNavigate(); // ✅ Add this here
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
-
+  
     try {
       const res = await registerUser(username, email, password);
-      setMessage(res.message);
-      // Optionally, redirect to login or auto-login
+      toast.success("✅ Account created successfully!");
+      
+      // Optionally wait 1 second before redirecting
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
     } catch (err) {
+      toast.error("❌ " + (err.message || "Registration failed"));
       setError(err.message);
     }
   };
+  
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">

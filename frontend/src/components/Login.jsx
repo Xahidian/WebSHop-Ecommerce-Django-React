@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // ✅ added useEffect
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api';
+import { toast } from 'react-hot-toast';
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
@@ -8,36 +9,49 @@ const Login = ({ onLogin }) => {
   const navigate = useNavigate();
   const [error, setError] = useState('');
 
+  // ✅ Redirect and toast if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      toast.error("You are already logged in. Please log out first if you want to log in again.");
+      navigate('/myitems');
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const data = await loginUser({ username, password });
-  
+
       localStorage.setItem('access_token', data.access);
       localStorage.setItem('refresh_token', data.refresh);
       localStorage.setItem('username', username);
-  
-      // ✅ Decode the access token to get user id
+
       const base64Url = data.access.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const payload = JSON.parse(atob(base64));
-  
+
       const userObject = {
-        id: payload.user_id,   // ✅ JWT returns user_id field
+        id: payload.user_id,
         username: username
       };
-  
-      localStorage.setItem("user", JSON.stringify(userObject)); // ✅ Save user for later use
-  
+
+      localStorage.setItem("user", JSON.stringify(userObject));
+
       onLogin(username);
+
+      // ✅ Show toast success message
+      toast.success("✅ Logged in successfully!");
+
       navigate('/');
     } catch (err) {
       console.error("Login failed:", err);
       setError(err.message || 'Login failed');
+
+      // ❌ Show toast error message
+      toast.error("❌ Login failed. Please check your credentials.");
     }
   };
-  
-  
 
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">

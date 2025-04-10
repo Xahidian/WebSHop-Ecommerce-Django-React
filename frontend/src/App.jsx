@@ -13,6 +13,9 @@ import Purchased from './components/Purchased';
 import EditAccount from './components/EditAccount';
 import PopulationDb from './components/PopulationDb'; // Corrected import for PopulationDb component
 import { fetchItems } from './api'; // Import the fetchItems function
+import { toast } from 'react-hot-toast';
+import { Navigate } from 'react-router-dom';
+import MyItems from './components/MyItems';
 
 const App = () => {
   const [cart, setCart] = useState([]);
@@ -23,13 +26,16 @@ const App = () => {
   const [loggedInUser, setLoggedInUser] = useState(localStorage.getItem('username') || '');
 
 
+
+  const getItems = async () => {
+    const fetchedItems = await fetchItems();
+    setItems(fetchedItems);
+  };
+  
   useEffect(() => {
-    const getItems = async () => {
-      const fetchedItems = await fetchItems();
-      setItems(fetchedItems);
-    };
-    getItems();
+    getItems();  // Load on mount
   }, []);
+  
 
   const handleAddToCart = async (item) => {
     const token = localStorage.getItem("access_token");
@@ -152,10 +158,33 @@ const App = () => {
   const handleCloseModal = () => {
     setSelectedItem(null);
   };
+//search from API call
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-  };
+// Debounce helper (optional)
+let debounceTimeout;
+const handleSearch = (query) => {
+  setSearchQuery(query);
+
+  // Clear any previously scheduled API calls
+  if (debounceTimeout) clearTimeout(debounceTimeout);
+
+  debounceTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/items/search/?q=${encodeURIComponent(query)}`
+      );
+      const data = await response.json();
+
+      // Update items state with the results from API
+      setItems(data);
+    } catch (error) {
+      console.error("Error performing search:", error);
+    }
+    console.log("Search triggered with query:", query);
+  }, 300);  // Delay in milliseconds (adjust as needed)
+};
+
 
   const filteredItems = items.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -174,27 +203,60 @@ const App = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('username');
+    toast.success("👋 Logged out successfully!");
   }}
+  
 />
 
         <div className="container mx-auto p-4 flex-grow">
           <Routes>
-            <Route path="/" element={<FrontPage items={filteredItems} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/login" element={<Login onLogin={setLoggedInUser} />} />
+          <Route
+  path="/"
+  element={
+    <FrontPage
+      items={filteredItems}
+      onAddToCart={handleAddToCart}
+      onViewDetails={handleViewDetails}
+      loggedInUser={loggedInUser}   // 👈 pass this down
+    />
+  }
+/>
+<Route path="/login" element={<Login onLogin={setLoggedInUser} />} />
+<Route path="/signup" element={<SignUp />} />
 
 
-            <Route path="/add-item" element={<AddItem />} />
-            <Route path="/items" element={<ItemList items={filteredItems} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} />} />
+
+<Route
+  path="/add-item"
+  element={
+    loggedInUser ? (
+      <AddItem
+        onItemAdded={(newItem) => {
+          // Append the new item to the existing items state
+          setItems((prevItems) => [...prevItems, newItem]);
+        }}
+      />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+
+            <Route path="/items" element={<ItemList items={filteredItems} onAddToCart={handleAddToCart} onViewDetails={handleViewDetails} loggedInUser={loggedInUser} />} />
             <Route path="/cart" element={<Cart items={cart} onIncreaseQuantity={handleIncreaseQuantity} onDecreaseQuantity={handleDecreaseQuantity} onCheckout={handleCheckout} />} />
-            <Route path="/checkout" element={<Checkout items={cart} onProceed={handleProceed} />} />
-            <Route path="/purchased" element={<Purchased items={purchasedItems} />} />
-            <Route path="/edit-account" element={<EditAccount />} />
+            <Route path="/checkout" element={<Checkout items={cart} onProceed={handleProceed} setCart={setCart} />} />
+            <Route path="/purchased" element={<Purchased />} /> // remove `items` prop
+            <Route path="/account" element={<EditAccount />} />
             <Route path="/populate-db" element={<PopulationDb />} /> {/* Corrected import */}
+            <Route path="/myitems" element={<MyItems />} />
           </Routes>
         </div>
         {selectedItem && <Modal item={selectedItem} onClose={handleCloseModal} />}
       </div>
+
+    
+
     </Router>
   );
 };

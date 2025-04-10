@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchItems } from '../api'; // ✅ centralized API functions
+import toast from 'react-hot-toast';
+
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -43,34 +45,36 @@ const PopulationDb = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/populate-db/`);
       const data = await response.json();
-      setMessage(data.message);
+      toast.success(data.message); // ✅ success toast
       await loadItems();
       await fetchRawUsers();
-      setDbCleared(false); // ✅ allow loading again
+      setDbCleared(false);
     } catch (error) {
       console.error(error);
-      setMessage('Error populating the database');
+      toast.error('Error populating the database'); // ❌ error toast
     } finally {
       setLoading(false);
     }
   };
+  
 
   const clearDb = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}/clear-db/`);
       const data = await response.json();
-      setMessage(data.message);
+      toast.success(data.message); // ✅ toast
   
       setItems([]);
       setUsers({ test_users: [], real_users: [] });
       setShowUsers(false);
       setShowItems(false);
-      setDbCleared(true); // ✅ mark that DB was cleared
+      setDbCleared(true);
     } catch (error) {
       console.error(error);
-      setMessage('Error clearing the database');
+      toast.error('Error clearing the database'); // ❌ toast
     }
   };
+  
   
   
 
