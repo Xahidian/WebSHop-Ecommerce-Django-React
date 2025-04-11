@@ -5,23 +5,24 @@
 **Name:** Md Hasibul Haque Zahid  
 **Email:** md.zahid@abo.fi
 **Student ID:** 2302302
+
 ## Repository
 GitHub: [webshopproject2024-Xahidian](https://github.com/AA-IT-WebTechCourse/webshopproject2024-Xahidian)
 
 ## Implemented Requirements
 ### ✅ Mandatory Requirements (24 points)
 
-1. **Project Folder Structure** Done
+1. **Project Folder Structure** 
    - Root folder with README
    - Backend folder with `requirements.txt`
    - Frontend folder with `package.json`
 
-2. **Backend** Done
+2. **Backend** 
    - Django backend with API
    - Serves JSON to shop and HTML for landing page
    - Uses SQLite database
 
-3. **Frontend** done
+3. **Frontend** 
    - Implemented using React
 
 4. **Automatic Database Population**
@@ -63,16 +64,16 @@ GitHub: [webshopproject2024-Xahidian](https://github.com/AA-IT-WebTechCourse/web
 11. **Remove from Cart**
     - Buyers can remove items from their cart
 
-12. **Pay**
-    - Buyers see cart and can press "Pay"
+12. **Pay** 
+    - Buyers see cart and can press "Pay" (**You need to go back to the cart to see the updated price & again you can proceed to checkout, if you are agree with the new price**)
     - Validations:
       - Halt if price changes; notify user
-      - Halt if item unavailable; notify user
-      - On success, items marked as SOLD and added to buyer's purchased list
+      - Halt if item unavailable; notify user (**will show a toast message about the demanding quantity is unavailable**)
+      - On success, items marked as SOLD and added to buyer's purchased list (**The item should  be no longer available in the frontpage for buying and you can see the item in the buyer purchase list**)
 
 13. **Routing (SPA)**
     - Navigation through:
-      - `/` (Shop)
+      - `/`(Shop)
       - `/signup`
       - `/login`
       - `/account`

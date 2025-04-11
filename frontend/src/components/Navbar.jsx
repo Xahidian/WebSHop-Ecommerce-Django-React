@@ -10,7 +10,8 @@ const Navbar = ({ cartCount, onSearch, loggedInUser, onLogout }) => {
   };
 
   return (
-    <nav className="bg-white shadow-md dark:bg-gray-800">
+    <nav className="bg-blue-600 shadow-md text-black dark:bg-gray-800 dark:text-white">
+
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo */}
         <Link to="/">
@@ -23,13 +24,14 @@ const Navbar = ({ cartCount, onSearch, loggedInUser, onLogout }) => {
 
         {/* Search Bar */}
         <div className="flex space-x-4 items-center">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            placeholder="Search..."
-            className="px-4 py-2 border rounded-lg shadow-sm"
-          />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder="Search..."
+          className="px-4 py-2 border border-white text-white placeholder-white rounded-lg shadow-sm bg-transparent"
+        />
+
 
           {/* Authenticated View */}
           {loggedInUser ? (
@@ -70,13 +72,13 @@ const Navbar = ({ cartCount, onSearch, loggedInUser, onLogout }) => {
             <>
               <Link
                 to="/login"
-                className="text-indigo-600 hover:underline font-medium"
+                className="text-white-600 hover:underline font-medium"
               >
                 Login
               </Link>
               <Link
                 to="/signup"
-                className="text-indigo-600 hover:underline font-medium"
+                className="text-white-600 hover:underline font-medium"
               >
                 Sign Up
               </Link>

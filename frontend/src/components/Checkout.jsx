@@ -189,7 +189,7 @@ const Checkout = ({ items, onProceed, setCart }) => {
               disabled={isLoading}
               className="mt-6 w-full bg-green-600 text-white py-3 rounded hover:bg-green-700"
             >
-              {isLoading ? 'Processing...' : 'Place Order'}
+              {isLoading ? 'Processing...' : 'Pay'}
             </button>
           </div>
         </div>

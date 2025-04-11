@@ -18,7 +18,18 @@ import { Navigate } from 'react-router-dom';
 import MyItems from './components/MyItems';
 
 const App = () => {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Error loading cart:', error);
+      return [];
+    }
+  });
+  
+  // Separate the useEffect hooks
+
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +47,9 @@ const App = () => {
     getItems();  // Load on mount
   }, []);
   
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]); // 👈 Only runs when cart changes
 
   const handleAddToCart = async (item) => {
     const token = localStorage.getItem("access_token");
@@ -112,42 +126,42 @@ const App = () => {
   
 
   const handleCheckout = () => {
-    setPurchasedItems(cart);  // Store cart items in purchasedItems
-    setCart([]);  // Clear cart after purchase
+   // setPurchasedItems(cart);  // Store cart items in purchasedItems
+  //  setCart([]);  // Clear cart after purchase
   };
 
- const handleProceed = async () => {
-  const token = localStorage.getItem("access_token");
-
-  if (!token) {
-    alert("❌ You must be logged in to complete the purchase.");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ items: cart })
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      setPurchasedItems((prev) => [...prev, ...cart]);
-      setCart([]);
-      alert("✅ Purchase successful!");
-    } else {
-      alert(`❌ ${data.error || "Checkout failed."}`);
+  const handleProceed = async () => {
+    const token = localStorage.getItem("access_token");
+  
+    if (!token) {
+      alert("❌ You must be logged in to complete the purchase.");
+      return;
     }
-  } catch (err) {
-    console.error("Purchase error:", err);
-    alert("❌ Purchase failed due to network error.");
-  }
-};
+  
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/checkout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ items: cart })
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        setPurchasedItems((prev) => [...prev, ...cart]);
+        setCart([]); // This will trigger the useEffect and clear localStorage
+        alert("✅ Purchase successful!");
+      } else {
+        alert(`❌ ${data.error || "Checkout failed."}`);
+      }
+    } catch (err) {
+      console.error("Purchase error:", err);
+      alert("❌ Purchase failed due to network error.");
+    }
+  };
 
   
 

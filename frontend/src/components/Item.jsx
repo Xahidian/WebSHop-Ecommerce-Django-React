@@ -35,7 +35,7 @@ const Item = ({
 <p className="text-gray-700 text-base mb-4">{description}</p>
 
         <div className="flex justify-between items-center mb-4">
-          <span className="text-gray-900 font-bold text-lg">${price}</span>
+          <span className="text-gray-900 font-bold text-lg">€{price}</span>
           <span className="text-gray-600 text-sm">
             {dateAdded ? new Date(dateAdded).toLocaleDateString() : 'No Date'}
           </span>

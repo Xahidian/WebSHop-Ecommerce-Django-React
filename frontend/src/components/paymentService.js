@@ -55,7 +55,7 @@ export const handlePay = async (cartItems, toast) => {
   });
 
   if (priceChanged) {
-    toast.error("One or more item prices have changed. Please review the updated prices.");
+    toast.error("One or more item prices have changed. Please review the cart for updated prices.");
     return { success: false, updatedCart, reason: "PRICE_CHANGED" };
   }
 

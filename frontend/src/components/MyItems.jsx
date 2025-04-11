@@ -131,7 +131,7 @@ const MyItems = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">🧺 My Items</h1>
+      <h1 className="text-3xl font-bold text-center mb-6"> My Items</h1>
 
       {/* Tab Buttons */}
       <div className="flex justify-center space-x-4 mb-6">

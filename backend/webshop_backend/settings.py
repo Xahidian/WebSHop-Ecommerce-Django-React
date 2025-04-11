@@ -1,4 +1,6 @@
 from pathlib import Path
+# This is for time manipulation  for JWT expiration
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -133,5 +135,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # <-- Set this to AllowAny
     ],
+}
+
+# Refresh token lifetime
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=99999),  # practically never expires
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=1),  # optional: basically disable it
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+
+    # optional: disallow refresh token
+    # "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
 }
 

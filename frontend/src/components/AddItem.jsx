@@ -99,6 +99,8 @@ const AddItem = ({ onItemAdded }) => {
             className="w-full p-2 border border-gray-300 rounded"
             placeholder="Item Price"
             required
+            min="1"
+            step="0.10"
           />
         </div>
         <div className="mb-4">
