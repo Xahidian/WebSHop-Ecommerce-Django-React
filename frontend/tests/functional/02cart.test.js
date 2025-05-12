@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+//import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
 import { login } from './utils/authHelpers';
 
 test.describe('FT6: Prevent Self-Purchase (Seller cannot buy own item)', () => {

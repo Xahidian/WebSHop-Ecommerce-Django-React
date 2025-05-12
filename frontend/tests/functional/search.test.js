@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
+//import { test, expect } from '@playwright/test';
 
 test.describe('FT10: Search Functionality (Backend-bound)', () => {
   test('User searches for items and sees filtered results', async ({ page }) => {

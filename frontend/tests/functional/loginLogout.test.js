@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
+//import { test, expect } from '@playwright/test';
 
 test.describe('FT3: Login and Logout Flow', () => {
   const username = 'testuser1';

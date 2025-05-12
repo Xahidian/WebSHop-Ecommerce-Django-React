@@ -11,7 +11,8 @@ const Cart = ({ items, onIncreaseQuantity, onDecreaseQuantity, onCheckout }) => 
 
   // Calculate total price
   const total = items.reduce(
-    (acc, item) => acc + item.price * (item.quantity || 1),
+    (acc, item) => acc + item.price * (item.quantity || 1), // Orginal Code
+      // (acc, item) => acc + item.price * ('abc'), // Fault Injection for MR 15 (This will result in NaN, which MR15 is designed to catch)
     0
   );
 

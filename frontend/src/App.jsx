@@ -112,17 +112,23 @@ const App = () => {
   
   
   const handleDecreaseQuantity = (item) => {
-    setCart((prevCart) => {
-      const newCart = [...prevCart];
-      const index = newCart.findIndex(cartItem => cartItem.id === item.id);
-      if (index !== -1 && newCart[index].quantity > 1) {
-        newCart[index].quantity -= 1;  // Decrease quantity
+  setCart((prevCart) => {
+    const newCart = [...prevCart];
+    const index = newCart.findIndex(cartItem => cartItem.id === item.id);
+    if (index !== -1) {
+      console.log("Current quantity:", newCart[index].quantity);
+      if (newCart[index].quantity > 1) {
+        newCart[index].quantity -= 1;
+        console.log("Decreased by 1 → now", newCart[index].quantity);
       } else {
-        newCart.splice(index, 1);  // Remove item if quantity is 1
+        newCart.splice(index, 1);
+        console.log("Removed item from cart");
       }
-      return newCart;
-    });
-  };
+    }
+    return newCart;
+  });
+};
+
   
 
   const handleCheckout = () => {
@@ -217,6 +223,7 @@ const handleSearch = (query) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('username');
+   // localStorage.removeItem('cart'); // Injected fault for MR16
     toast.success("👋 Logged out successfully!");
   }}
   

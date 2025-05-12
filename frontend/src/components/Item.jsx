@@ -21,10 +21,7 @@ const Item = ({
   const isOwnItem = loggedInUser === ownerUsername;
   const isUnavailable = quantity === 0 || sold;
   
-  //console.log("🧪 userId from localStorage:", userId);
-  //console.log("🧪 item.ownerId:", ownerId);
- // console.log("🧪 isOwnItem:", isOwnItem);
-  //console.log("📦 localStorage user object:", user);
+
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
       <img className="w-full h-48 object-cover" src={image || '/image/Product1.jpg'} alt="Product" />
@@ -41,12 +38,20 @@ const Item = ({
           </span>
         </div>
         <div className="flex space-x-2">
-          <button
+          {/* Orginal Code before fault dettection to Check MR 13 */}
+          
+       {   <button
             onClick={() => onViewDetails({ id, image, title, description, price, dateAdded })}
             className="w-full text-center text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5"
           >
             View Details
-          </button>
+          </button >
+          // Fault Injection for MR13
+
+          // <button className="w-full text-white bg-yellow-500 rounded px-5 py-2.5 mb-2">Edit</button> 
+          }
+
+          
           {isOwnItem ? (
   <button
     disabled
@@ -54,6 +59,8 @@ const Item = ({
   >
     Your Item
   </button>
+
+
 ) : isUnavailable ? (
   <button
     disabled

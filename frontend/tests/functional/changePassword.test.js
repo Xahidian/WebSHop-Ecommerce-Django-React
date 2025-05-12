@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+//import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
 import { login } from './utils/authHelpers';
 
 test.describe('FT14: Change Password in Edit Account', () => {

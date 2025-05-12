@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
+//import { test, expect } from '@playwright/test';
 
 test.describe('FT2: User Registration Flow', () => {
   test('Registers a new user and sees confirmation', async ({ page }) => {

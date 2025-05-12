@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
+//import { test, expect } from '@playwright/test';
 import { login } from './utils/authHelpers';
 
 test.describe('FT8: Grouped My Items View (as per spec)', () => {

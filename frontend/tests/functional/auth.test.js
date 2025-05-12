@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+//import { test, expect } from '@playwright/test';
+import { test, expect } from 'playwright-test-coverage';
 import { login, signup } from './utils/authHelpers';
 
 test.describe('FT2: Signup and Login', () => {
