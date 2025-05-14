@@ -1,4 +1,6 @@
 from pathlib import Path
+# This is for time manipulation  for JWT expiration
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt',
     'rest_framework',  # Add this
     'shop',            # Add this
     'corsheaders',     # Add this
@@ -40,7 +43,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'webshop_backend.urls'
 
 TEMPLATES = [
@@ -125,3 +128,27 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://localhost:5173",  # Your frontend's development URL
 #     "http://127.0.0.1:5173",  # Another local option
 # ]
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # <-- Set this to AllowAny
+    ],
+}
+
+# Refresh token lifetime
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=99999),  # practically never expires
+    "REFRESH_TOKEN_LIFETIME": timedelta(seconds=1),  # optional: basically disable it
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
+    "UPDATE_LAST_LOGIN": False,
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+
+    # optional: disallow refresh token
+    # "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+}
+

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-hot-toast'; // ✅ import toast
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const EditAccount = () => {
   const [oldPassword, setOldPassword] = useState('');
@@ -7,83 +9,101 @@ const EditAccount = () => {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
 
-    // Simple client-side validation
     if (!oldPassword || !newPassword || !confirmNewPassword) {
-      setError('Please fill in all fields.');
+      const msg = 'Please fill in all fields.';
+      setError(msg);
+      toast.error(msg); // ✅ toast for empty fields
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      setError('New passwords do not match.');
+      const msg = 'New passwords do not match.';
+      setError(msg);
+      toast.error(msg); // ✅ toast for mismatch
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
-      return;
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/api/change-password/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          old_password: oldPassword,
+          new_password: newPassword
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        const msg = data.error || 'Password update failed.';
+        setError(msg);
+        toast.error(`❌ ${msg}`); // ✅ toast for failure
+        return;
+      }
+
+      const msg = data.message || 'Password updated!';
+      setSuccess(msg);
+      toast.success(`✅ ${msg}`); // ✅ toast for success
+
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err) {
+      console.error(err);
+      const msg = 'An error occurred.';
+      setError(msg);
+      toast.error(`❌ ${msg}`); // ✅ toast for network error
     }
-
-    // Assuming backend logic to update password (skip for now)
-    // Simulate success
-    setSuccess('Password updated successfully.');
-    setError('');
-
-    // Redirect after successful update (optional)
-    setTimeout(() => {
-      navigate('/profile'); // Redirect to profile page (or any other page)
-    }, 2000);
   };
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Edit Account</h1>
-      
-      {/* Error and Success Messages */}
-      {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-      {success && <div className="text-green-500 text-center mb-4">{success}</div>}
-      
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="max-w-md mx-auto">
-        <div className="mb-4">
-          <label htmlFor="oldPassword" className="block text-lg font-medium text-gray-700">Old Password</label>
-          <input
-            type="password"
-            id="oldPassword"
-            className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="newPassword" className="block text-lg font-medium text-gray-700">New Password</label>
-          <input
-            type="password"
-            id="newPassword"
-            className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="confirmNewPassword" className="block text-lg font-medium text-gray-700">Confirm New Password</label>
-          <input
-            type="password"
-            id="confirmNewPassword"
-            className="w-full p-2 mt-2 border border-gray-300 rounded-lg"
-            value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
-            required
-          />
-        </div>
-        
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded-lg mt-4">Update Password</button>
+      <h1 className="text-3xl font-bold text-center mb-6">My Account</h1>
+
+      <form onSubmit={handlePasswordSubmit} className="max-w-md mx-auto">
+        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+        {success && <div className="text-green-500 text-center mb-4">{success}</div>}
+
+        <label className="block mb-2 font-medium">Old Password</label>
+        <input
+          type="password"
+          className="w-full mb-4 p-2 border rounded"
+          value={oldPassword}
+          onChange={(e) => setOldPassword(e.target.value)}
+        />
+
+        <label className="block mb-2 font-medium">New Password</label>
+        <input
+          type="password"
+          className="w-full mb-4 p-2 border rounded"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+
+        <label className="block mb-2 font-medium">Confirm New Password</label>
+        <input
+          type="password"
+          className="w-full mb-4 p-2 border rounded"
+          value={confirmNewPassword}
+          onChange={(e) => setConfirmNewPassword(e.target.value)}
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
+          Update Password
+        </button>
       </form>
     </div>
   );

@@ -2,7 +2,7 @@
 import React from 'react';
 import Item from './Item';
 
-const ItemList = ({ items, onAddToCart, onViewDetails }) => {
+const ItemList = ({ items, onAddToCart, onViewDetails, loggedInUser}) => {
   console.log("Items array:", items);  // Log the full items array for debugging
 
   return (
@@ -11,16 +11,19 @@ const ItemList = ({ items, onAddToCart, onViewDetails }) => {
         console.log(`Rendering Item with key: ${item.id || index}`); // Log each key
         return (
           <Item
-            key={item.id || index}
-            id={item.id}
-            image={item.image}
-            title={item.title}
-            description={item.description}
-            price={item.price}
-            dateAdded={item.date_added}
-            onAddToCart={() => onAddToCart(item)}
-            onViewDetails={onViewDetails}
-          />
+          loggedInUser={loggedInUser}  // 👈 Add this
+          key={item.id}
+          id={item.id}
+          image={item.image}
+          title={item.title}
+          description={item.description}
+          price={item.price}
+          dateAdded={item.date_added}
+          ownerId={item.owner_id}
+          ownerUsername={item.owner_username} // ✅ Pass ownerUsername here
+          onAddToCart={() => onAddToCart(item)}
+          onViewDetails={onViewDetails}
+        />
         );
       })}
     </div>

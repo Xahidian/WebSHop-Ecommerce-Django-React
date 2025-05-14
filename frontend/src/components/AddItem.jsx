@@ -1,34 +1,66 @@
-// src/components/AddItem.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const AddItem = () => {
+const AddItem = ({ onItemAdded }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!title || !description || !price) {
       alert('Please fill in all required fields.');
       return;
     }
-
-    // Log form values for debugging; this would be sent to the backend later
-    console.log({
-      title,
-      description,
-      price,
-      image,
-    });
-
-    alert('Item added successfully!');
-    navigate('/items');
+  
+    const token = localStorage.getItem('access_token');
+    console.log("🚀 JWT Token being sent:", token);
+    
+    if (!token) {
+      alert('You must be logged in to add an item.');
+      return;
+    }
+  
+    try {
+      // If you don't want to send image as part of FormData, leave as JSON.
+      // Otherwise, change to FormData (see below if needed).
+      const response = await fetch(`${API_BASE_URL}/api/items/add/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          price,
+          // If your backend accepts an image, you'll need to switch to FormData
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add item');
+      }
+  
+      alert('Item added successfully!');
+      
+      // Call the callback with the new item data
+      if (onItemAdded) onItemAdded(data);
+      
+      // Navigate to /items
+      navigate('/items');
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred: ' + err.message);
+    }
   };
-
+  
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
   };
@@ -67,6 +99,8 @@ const AddItem = () => {
             className="w-full p-2 border border-gray-300 rounded"
             placeholder="Item Price"
             required
+            min="1"
+            step="0.10"
           />
         </div>
         <div className="mb-4">
