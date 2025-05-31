@@ -23,7 +23,7 @@ const Item = ({
   
 
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out">
+    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white hover:shadow-xl transition-shadow duration-300 ease-in-out" data-item-id={id}>
       <img className="w-full h-48 object-cover" src={image || '/image/Product1.jpg'} alt="Product" />
       <div className="px-6 py-4">
       <div className="font-bold text-xl mb-2 text-gray-900">{title}</div>
@@ -38,7 +38,7 @@ const Item = ({
           </span>
         </div>
         <div className="flex space-x-2">
-          {/* Orginal Code before fault dettection to Check MR 13 */}
+          {/* Orginal Code before fault dettection to Check MR 1 */}
           
        {   <button
             onClick={() => onViewDetails({ id, image, title, description, price, dateAdded })}
@@ -46,9 +46,9 @@ const Item = ({
           >
             View Details
           </button >
-          // Fault Injection for MR13
+       
 
-          // <button className="w-full text-white bg-yellow-500 rounded px-5 py-2.5 mb-2">Edit</button> 
+          //  <button className="w-full text-white bg-yellow-500 rounded px-5 py-2.5 mb-2">Edit</button> // Fault Injection 1
           }
 
           

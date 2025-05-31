@@ -5,199 +5,258 @@ import { login, logout } from '../functional/utils/authHelpers';
 test.describe('MR Fault Detection: Metamorphic Tests for E-commerce', () => {
   test.describe.configure({ timeout: 60000 });
 
-  // ✅ Reset DB once before all tests
+  //  Reset DB once before all tests
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
-    console.log('🔄 Resetting DB before test suite...');
+    console.log(' Resetting DB before test suite...');
     await page.goto('/populate-db');
     await page.click('button:has-text("Clear DB Before Repopulation")');
     await page.waitForTimeout(3000);
     await page.click('button:has-text("Populate DB")');
     await expect(page.locator('text=Database populated successfully')).toBeVisible({ timeout: 10000 });
-    console.log('✅ DB populated');
+    console.log(' DB populated');
     await page.close();
   });
 
-  test('MR13: User cannot edit another user\'s item', async ({ page }) => {
-    console.log('🔐 MR13 starting: login as testuser2');
+ 
+
+test('MR1: User cannot edit another user\'s item ', async ({ page }) => {
+    console.log(' MR1 starting');
+
+    // 🔹 Seed Input
+    console.log(' Seed Input: Login as testuser2 and view testuser1\'s item');
     await login(page, 'testuser2', 'pass2');
     await page.goto('/');
-    const card = page.locator('.max-w-sm:has-text("testuser1")').first();
-    await expect(card).toBeVisible();
-    const editButton = card.locator('button:has-text("Edit")');
-    await expect(editButton).toHaveCount(0);
-    console.log('✅ MR13 passed: Edit button not visible');
-  });
+    const seedCard = page.locator('.max-w-sm:has-text("testuser1")').first();
+    await expect(seedCard).toBeVisible();
 
-  test('MR14: Purchase history persists after logout and relogin', async ({ page }) => {
-  console.log('🔐 MR14 starting: login as testuser3');
-  await login(page, 'testuser3', 'pass3');
-  await page.goto('/');
+    // Ensure the Edit button is fully rendered
+    await page.waitForTimeout(1000);  // Optional: adjust timing as needed
+    const editButtonSeed = seedCard.locator('button:has-text("Edit")');
+    await page.waitForSelector('button:has-text("Edit")', { timeout: 5000 }).catch(() => {});
+    const seedOutput = await editButtonSeed.count();
+    console.log(` Seed Output: Edit button count for testuser2 = ${seedOutput}`);
 
-  // Add item owned by testuser1
-  const otherUserCard = page.locator('.max-w-sm:has-text("testuser1")').first();
-  await expect(otherUserCard).toBeVisible({ timeout: 10000 });
-  const addToCartButton = otherUserCard.locator('button:has-text("Add to Cart")');
-  await addToCartButton.click();
-  await page.waitForTimeout(500);
-
-  await page.goto('/cart');
-  await page.waitForTimeout(500);
-  await page.click('button:has-text("Proceed to Checkout")');
-  await page.waitForTimeout(500);
-  await page.click('button:has-text("Pay")');
-  await page.waitForURL('/purchased');
-  await page.waitForTimeout(1000);
-
-  // ✅ Count purchases immediately after purchase
-  const purchaseNow = await page.locator('div:has-text("Total Paid")').count();
-  console.log('🧾 Purchases before logout:', purchaseNow);
-  expect(purchaseNow).toBeGreaterThan(0);
-
-  // 🔁 Logout and login again
-  await logout(page);
-  await page.waitForTimeout(500);
-  await login(page, 'testuser3', 'pass3');
-  await page.goto('/myitems');
-  await page.waitForTimeout(500);
-  await page.click('button:has-text("🎁 Purchased")');
-  await page.waitForTimeout(1000);
-
-  // ✅ Count purchases again after relogin
-  const purchaseAfter = await page.locator('div:has-text("Total")').count();
-  console.log('🧾 Purchases after relogin (from /myitems):', purchaseAfter);
-  expect(purchaseAfter).toBeGreaterThanOrEqual(purchaseNow);
-});
-
-
-  test('MR15: Non-numeric quantity input should be rejected', async ({ page }) => {
+    // 🔹 Transformation (Morphed Input)
+   // console.log(' Transformation: Logging out and logging in as testuser3 to view same item');
+    await logout(page);
+    await page.waitForTimeout(1000);
     await login(page, 'testuser3', 'pass3');
     await page.goto('/');
-    await page.click('button:has-text("Add to Cart")');
+
+    // Optional: Print current URL and card HTML for debugging
+    const currentURL = page.url();
+   //  console.log(` Debug: Current page URL after login as testuser3: ${currentURL}`);
+
+    const morphedCard = page.locator('.max-w-sm:has-text("testuser1")').first();
+    await expect(morphedCard).toBeVisible({ timeout: 5000 });
+
+    // Print the HTML of the morphed card for deeper inspection
+    const cardHTML = await morphedCard.innerHTML();
+
+    //console.log(` Debug: Morphed Card HTML for testuser3: ${cardHTML}`);
+
+    // Ensure the Edit button is fully rendered
+    await page.waitForSelector('button:has-text("Edit")', { timeout: 5000 }).catch(() => {});
+    const editButtonMorphed = morphedCard.locator('button:has-text("Edit")');
+    const morphedOutput = await editButtonMorphed.count();
+    console.log(` Morphed Output: Edit button count for testuser3 = ${morphedOutput}`);
+
+    // 🔹 Updated Relation Check: Both outputs should be 0 (Edit button hidden for non-owners)
+    console.log(' Verifying relation: Both outputs should be 0 (Edit button hidden for both users)');
+    expect(seedOutput).toBe(0);
+    expect(morphedOutput).toBe(0);
+
+    console.log(' MR1 passed: Edit button consistently hidden for both users');
+});
+
+
+
+
+test('MR2: Purchase history persists after logout and relogin ', async ({ page }) => {
+    console.log(' MR2 starting');
+
+    //  Seed Input: Login as testuser3, purchase an item
+    console.log(' Seed Input: Login as testuser3 and purchase item from testuser1');
+    await login(page, 'testuser3', 'pass3');
+    await page.goto('/');
+    const itemCard = page.locator('.max-w-sm:has-text("testuser1")').first();
+    await expect(itemCard).toBeVisible({ timeout: 10000 });
+    const addToCartButton = itemCard.locator('button:has-text("Add to Cart")');
+    await addToCartButton.click();
     await page.waitForTimeout(500);
     await page.goto('/cart');
+    await page.click('button:has-text("Proceed to Checkout")');
     await page.waitForTimeout(500);
-
-    console.log('✏️ Injecting invalid quantity "abc"');
-    await page.evaluate(() => {
-      const qtySpan = document.querySelector('span.mx-3.text-lg');
-      if (qtySpan) qtySpan.textContent = 'abc';
-    });
-
-    const totalLocator = page.locator('div.font-bold:has-text("Total") span').last();
-    await expect(totalLocator).toBeVisible({ timeout: 10000 });
-    const totalText = await totalLocator.innerText();
-    console.log('💰 Total after injection:', totalText);
-    expect(totalText).not.toMatch(/NaN|abc/);
-  });
-
-  // tests/metamorphic/advanced_mrs.test.js (inside describe block)
-test('MR16: Multiple items stay in cart after logout when cart is not cleared (human-speed)', async ({ page }) => {
-  // Step 1: Login as testuser3
-  console.log('🔐 Step 1: Logging in as testuser3');
-  await login(page, 'testuser3', 'pass3');
-  await page.waitForTimeout(3000);
-
-  // Step 2: Add 4–5 items owned by testuser1 to cart
-  console.log('🛒 Step 2: Adding 4–5 items to cart');
-  await page.goto('/');
-  await page.waitForTimeout(3000);
-
-  const itemCards = page.locator('.max-w-sm:has-text("testuser1")');
-  const count = await itemCards.count();
-  const addLimit = Math.min(count, 5);
-
-  for (let i = 0; i < addLimit; i++) {
-    const card = itemCards.nth(i);
-    const addBtn = card.locator('button:has-text("Add to Cart")');
-    await addBtn.click();
-    console.log(`➕ Added item ${i + 1} to cart`);
+    await page.click('button:has-text("Pay")');
+    await page.waitForURL('/purchased');
     await page.waitForTimeout(1000);
-  }
 
-  // Step 3: Go to cart and confirm all items are there
-  console.log('🧺 Step 3: Verifying cart has multiple items');
-  await page.goto('/cart');
-  await page.waitForTimeout(3000);
+    //  Seed Output: Count purchases immediately after purchase
+    const seedOutput = await page.locator('div:has-text("Total Paid")').count();
+    console.log(` Seed Output: Purchase count after checkout = ${seedOutput}`);
 
-  const cartBefore = await page.evaluate(() => localStorage.getItem('cart'));
-  console.log('📦 Cart before logout:', cartBefore);
-  expect(cartBefore).not.toBeNull();
+    //  Transformation: Log out and log back in as same user (session morph)
+    console.log(' Transformation: Logging out and logging in again as testuser3');
+    await logout(page);
+    await page.waitForTimeout(500);
+    await login(page, 'testuser3', 'pass3');
+    await page.goto('/myitems');
+    await page.click('button:has-text(" Purchased")');
+    await page.waitForTimeout(1000);
 
-  const itemCountBefore = await page.locator('h2.text-xl').count();
-  console.log(`🧮 Cart items before logout: ${itemCountBefore}`);
-  expect(itemCountBefore).toBeGreaterThanOrEqual(4);
+    //  Morphed Output: Count purchases after relogin
+    const morphedOutput = await page.locator('div:has-text("Total")').count();
+    console.log(` Morphed Output: Purchase count after relogin = ${morphedOutput}`);
 
-  // Step 4: Logout
-  console.log('🚪 Step 4: Logging out (with fault injected)');
-  await logout(page);
-  await page.waitForTimeout(3000);
-
-  // Step 5: Refresh
-  await page.reload();
-  await page.waitForTimeout(3000);
-
-  // Step 6: Login as testuser2
-  console.log('🔐 Step 6: Logging in as testuser2');
-  await login(page, 'testuser2', 'pass2');
-  await page.waitForTimeout(3000);
-
-  // Step 7: Go to cart — check if items remained
-  await page.goto('/cart');
-  await page.waitForTimeout(3000);
-
-  const cartAfter = await page.evaluate(() => localStorage.getItem('cart'));
-  console.log('📦 Cart after relogin:', cartAfter);
-
-  // This should fail if the fault is injected (i.e., cart wasn't cleared)
-  expect(cartAfter === null || cartAfter === '[]').toBeTruthy(); // ❌ Will fail if cart persisted
-
-  const itemCountAfter = await page.locator('h2.text-xl').count();
-  console.log(`🧮 Cart items after relogin: ${itemCountAfter}`);
-  expect(itemCountAfter).toBe(0); // ❌ Fails if items leak across sessions
+    //  Relation Check: Purchases should persist (outputs must be ≥1 and equal)
+    console.log(' Verifying relation: Purchase persisted across session (outputs should be equal)');
+    expect(seedOutput).toBeGreaterThan(0);
+    expect(morphedOutput).toBe(seedOutput);
+    console.log(' MR2 passed: Purchase history persisted after logout and relogin');
 });
 
 
 
-  test('MR17: Search result is consistent on repeated queries', async ({ page }) => {
+test('MR3: Item quantity consistency across sequential purchases', async ({ page, request }) => {
+    console.log('--- MR3: Item quantity consistency across sequential purchases ---');
+
+    const API_BASE_URL = 'http://127.0.0.1:8000';
+
+    // Reset DB to ensure a clean state
+    const resetPage = await page.context().newPage();
+    console.log(' Resetting database...');
+    await resetPage.goto('/populate-db');
+    await resetPage.click('button:has-text("Clear DB Before Repopulation")');
+    await resetPage.waitForTimeout(3000);
+    await resetPage.click('button:has-text("Populate DB")');
+    await expect(resetPage.locator('text=Database populated successfully')).toBeVisible({ timeout: 10000 });
+    await resetPage.close();
+    console.log(' Database reset and populated.');
+
+    // Helper: Fetch current stock from backend
+    const fetchCurrentStock = async (itemId) => {
+        const response = await request.get(`${API_BASE_URL}/api/items/${itemId}/latest/`);
+        const data = await response.json();
+        return data.quantity;
+    };
+
+    // 🔹 Seed Input
+    console.log('🔹 Seed Input: Logging in and adding item to cart');
+    await login(page, 'testuser3', 'pass3');
+    await page.goto('/');
+    const itemCard = page.locator('.max-w-sm:has-text("testuser1")').first();
+    await expect(itemCard).toBeVisible({ timeout: 10000 });
+
+    const itemId = await itemCard.getAttribute('data-item-id');
+    const initialStock = await fetchCurrentStock(itemId);
+    console.log(`🔹 Seed Input: Initial stock = ${initialStock}`);
+    expect(initialStock).toBeGreaterThanOrEqual(10);
+
+    const quantitySeed = 6; // Seed Input: Buy 6 items
+    for (let i = 0; i < quantitySeed; i++) {
+        const addToCartButton = itemCard.locator('button:has-text("Add to Cart")');
+        await addToCartButton.click();
+        await page.waitForTimeout(200);
+    }
+    await page.goto('/cart');
+
+    // 🔹 Seed Output
+    console.log(` Seed Output: Purchasing ${quantitySeed} units...`);
+    await page.click('button:has-text("Proceed to Checkout")');
+    await page.waitForTimeout(500);
+    await page.click('button:has-text("Pay")');
+    await page.waitForURL('/purchased');
+    await page.waitForTimeout(1000);
+    console.log(' Seed Output: First purchase completed successfully.');
+
+    const stockAfterSeed = await fetchCurrentStock(itemId);
+    console.log(`🔹 Seed Output: Stock after purchase = ${stockAfterSeed}`);
+    if (stockAfterSeed !== initialStock - quantitySeed) {
+        console.error(` Unexpected stock after seed: Expected ${initialStock - quantitySeed}, got ${stockAfterSeed}`);
+    }
+    expect(stockAfterSeed).toBe(initialStock - quantitySeed);
+
+    // Transformation: Attempt to over-purchase
+    console.log(' Transformation: Changing input to exceed remaining stock');
+
+    // 🔹 Morphed Input
+    console.log(' Morphed Input: Retrying with quantity 10 (exceeds remaining stock)');
+    await page.goto('/');
+    await expect(itemCard).toBeVisible();
+    const quantityMorphed = 10; 
+    for (let i = 0; i < quantityMorphed; i++) {
+        const addToCartButton = itemCard.locator('button:has-text("Add to Cart")');
+        await addToCartButton.click();
+        await page.waitForTimeout(200);
+    }
+    await page.goto('/cart');
+
+    // 🔹 Morphed Output
+    console.log(' Morphed Output: Attempting checkout expecting rejection...');
+    await page.click('button:has-text("Proceed to Checkout")');
+    await page.waitForTimeout(500);
+    await page.click('button:has-text("Pay")');
+
+    //  Relation Check: The morphed output must show an "Only X pieces available" error
+    const toastLocator = page.locator('text=/Only.*available/i');
+    try {
+        await expect(toastLocator).toBeVisible({ timeout: 5000 });
+        const errorMessage = await toastLocator.textContent();
+        console.log(` Morphed Output: Error message received = "${errorMessage}"`);
+        expect(errorMessage).toMatch(/Only.*available/i);
+        console.log(' MR3 passed: Item quantity consistency enforced.');
+    } catch (error) {
+        console.error(' Morphed Output: Expected "Only X pieces available" toast not found.');
+        const stockNow = await fetchCurrentStock(itemId);
+        console.error(`🔍 Current stock (after morphed attempt) = ${stockNow}`);
+        throw new Error(' MR3 failed: No error message on over-purchase; possible concurrency or stock validation fault.');
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+test('MR4: Search is case-insensitive ', async ({ page }) => {
+    console.log(' MR4 starting');
+
+    //  Seed Input: Search for an item with a specific casing
+    const seedSearch = 'Populated Item 2';
+    console.log(` Seed Input: Searching for "${seedSearch}"`);
     await page.goto('/');
     const searchInput = page.locator('input[placeholder="Search..."]');
-
-    await searchInput.fill('populated item 2');
+    await searchInput.fill(seedSearch);
     await page.waitForTimeout(1000);
-    const firstCount = await page.locator('.max-w-sm').count();
-    console.log('🔍 First search count:', firstCount);
 
+    //  Seed Output: Count number of search results
+    const seedOutput = await page.locator('.max-w-sm').count();
+    console.log(` Seed Output: Search result count for "${seedSearch}" = ${seedOutput}`);
+
+    //  Transformation (Morphed Input): Change the casing of the search term
+    const morphedSearch = 'POPuLATED ITEM 2';
+    console.log(` Morphed Input: Searching for "${morphedSearch}" (case variation)`);
     await searchInput.fill('');
+    await page.waitForTimeout(500);
+    await searchInput.fill(morphedSearch);
     await page.waitForTimeout(1000);
-    await searchInput.fill('populated item 2');
-    await page.waitForTimeout(1000);
-    const secondCount = await page.locator('.max-w-sm').count();
-    console.log('🔍 Second search count:', secondCount);
 
-    expect(secondCount).toBe(firstCount);
-  });
-test('MR18: Search is case-insensitive (capital vs small)', async ({ page }) => {
-  await page.goto('/');
-  const searchInput = page.locator('input[placeholder="Search..."]');
+    //  Morphed Output: Count number of search results with morphed casing
+    const morphedOutput = await page.locator('.max-w-sm').count();
+    console.log(` Morphed Output: Search result count for "${morphedSearch}" = ${morphedOutput}`);
 
-  // First search with capitalized input
-  const input1 = 'Populated Item 2';
-  await searchInput.fill(input1);
-  await page.waitForTimeout(1000);
-  const upperCount = await page.locator('.max-w-sm').count();
-  console.log(`🔍 MR18 - Search with "${input1}":`, upperCount);
-
-  // Second search with mixed-case variation
-  const input2 = 'POPuLATED ITEM 2';
-  await searchInput.fill('');
-  await page.waitForTimeout(500);
-  await searchInput.fill(input2);
-  await page.waitForTimeout(1000);
-  const lowerCount = await page.locator('.max-w-sm').count();
-  console.log(`🔍 MR18 - Search with "${input2}":`, lowerCount);
-
-  expect(lowerCount).toBe(upperCount);
+    //  Relation Check: Result counts should be equal (case-insensitive search)
+    console.log(' Verifying relation: Seed Output === Morphed Output (case-insensitive match)');
+    expect(morphedOutput).toBe(seedOutput);
+    console.log(' MR4 passed: Search results are case-insensitive');
 });
+
 
 });

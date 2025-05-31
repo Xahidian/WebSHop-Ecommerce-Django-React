@@ -16,6 +16,7 @@ import { fetchItems } from './api'; // Import the fetchItems function
 import { toast } from 'react-hot-toast';
 import { Navigate } from 'react-router-dom';
 import MyItems from './components/MyItems';
+import { Toaster } from 'react-hot-toast';
 
 const App = () => {
   const [cart, setCart] = useState(() => {
@@ -223,7 +224,7 @@ const handleSearch = (query) => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('username');
-   // localStorage.removeItem('cart'); // Injected fault for MR16
+   localStorage.removeItem('cart'); 
     toast.success("👋 Logged out successfully!");
   }}
   

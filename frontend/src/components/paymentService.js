@@ -45,7 +45,7 @@ export const handlePay = async (cartItems, toast) => {
     if (!item.available) {
       anyUnavailable = true;
     }
-
+ // Fault injection 3
     if (item.requestedQuantity > item.currentQuantity) {
       insufficientQuantity = true;
       insufficientMessage = `Only ${item.currentQuantity} pieces available for '${item.title}'.`;

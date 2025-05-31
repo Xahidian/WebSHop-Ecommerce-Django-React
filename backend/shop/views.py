@@ -276,7 +276,8 @@ def purchase_item(request):
             item=item,
             quantity=quantity,
             purchase_price=item.price
-        )
+        ) 
+        # Injected fault for MR 2, where the purchase does not get saved
 
         return Response({"success": "Purchase completed."}, status=200)
 
@@ -315,9 +316,14 @@ def edit_item(request, item_id):
 @permission_classes([AllowAny])
 def search_items(request):
     query = request.GET.get('q', '')
-    items = Item.objects.filter(title__icontains=query)
+
+    # MR4 FAULT: Only match titles that match exactly (case-sensitive)
+    items = Item.objects.filter(title=query)  # <- case-sensitive exact match fault inejction 4
+   #  items = Item.objects.filter(title__icontains=query)  #  Orginal code 
     serializer = ItemSerializer(items, many=True)
     return Response(serializer.data)
+
+
 #latest_item_data
 @api_view(['GET'])
 @permission_classes([AllowAny])
