@@ -1,4 +1,6 @@
 // Running backend server
+source venv/Scripts/activate
+
 python manage.py runserver
 // Running frontend server
 npm run dev
